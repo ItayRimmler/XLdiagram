@@ -153,7 +153,7 @@ def _add_edge(root, cell_id, source_id, target_id, label, arrow_style):
     ET.SubElement(cell, "mxGeometry", {"relative": "1", "as": "geometry"})
 
 
-def build_xml(positions, edges, groups=None, styles=None):
+def build_xml(positions, edges, groups=None, styles=None, zero_phantom=False):
     """
     Build and return the complete mxGraphModel XML element.
 
@@ -193,7 +193,8 @@ def build_xml(positions, edges, groups=None, styles=None):
         cell_id = str(next_id)
 
         if name.startswith("."):
-            # Phantom node — invisible, same size as real nodes for consistent edge anchoring
+            pw = 0 if zero_phantom else PHANTOM_W
+            ph = 0 if zero_phantom else PHANTOM_H
             cell = ET.SubElement(root, "mxCell", {
                 "id":     cell_id,
                 "value":  "",
@@ -204,8 +205,8 @@ def build_xml(positions, edges, groups=None, styles=None):
             ET.SubElement(cell, "mxGeometry", {
                 "x":      str(x),
                 "y":      str(y),
-                "width":  str(PHANTOM_W),
-                "height": str(PHANTOM_H),
+                "width":  str(pw),
+                "height": str(ph),
                 "as":     "geometry",
             })
         else:

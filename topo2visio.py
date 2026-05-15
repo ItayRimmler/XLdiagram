@@ -59,6 +59,8 @@ def main():
         help=f"Pixels per Excel grid cell (default: {DEFAULT_SCALE})")
     parser.add_argument("--margin", type=int, default=DEFAULT_MARGIN,
         help=f"Pixel offset from canvas edge (default: {DEFAULT_MARGIN})")
+    parser.add_argument("--zero-phantom", action="store_true",
+        help="Render phantom nodes as 0×0 points instead of full-size invisible boxes")
     args = parser.parse_args()
 
     input_path  = INPUTS_DIR  / args.input
@@ -86,7 +88,8 @@ def main():
     )
 
     # --- Step 3: assemble draw.io XML ---
-    xml_model = build_xml(positions, edges, groups=groups, styles=styles)
+    xml_model = build_xml(positions, edges, groups=groups, styles=styles,
+                          zero_phantom=args.zero_phantom)
 
     # --- Step 4: write output file ---
     tree = ET.ElementTree(xml_model)
