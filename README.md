@@ -1,4 +1,5 @@
-# topo2visio
+# XLdiagram
+$\color{pink}{\text{NOTE: (main file is called "topo2visio" because that was initially the name, these names are interchangeable)}}$
 
 Convert an Excel diagram spec into a draw.io file, exportable to Visio.
 
