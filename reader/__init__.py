@@ -194,13 +194,14 @@ def _cells_to_edge_rows(cells):
 def _cells_to_style_rows(cells):
     """
     Convert a flat {(row,col): value} dict from the Style sheet into
-    a list of [group, width, height, style_string] rows.
+    a list of [active, group, width, height, style_string] rows.
 
     Expected column layout (1-based):
-      col 1 = Group name
-      col 2 = Width  (pixels)
-      col 3 = Height (pixels)
-      col 4 = draw.io style string
+      col 1 = Active flag  ("#" = inactive/commented, blank = active)
+      col 2 = Group name
+      col 3 = Width  (pixels)
+      col 4 = Height (pixels)
+      col 5 = draw.io style string
 
     Row 1 is assumed to be a header and is skipped.
     """
@@ -214,10 +215,11 @@ def _cells_to_style_rows(cells):
     for row_idx in sorted(rows_by_index):
         r = rows_by_index[row_idx]
         style_rows.append([
-            r.get(1, ""),   # group name
-            r.get(2, ""),   # width
-            r.get(3, ""),   # height
-            r.get(4, ""),   # style string
+            r.get(1, ""),   # active flag
+            r.get(2, ""),   # group name
+            r.get(3, ""),   # width
+            r.get(4, ""),   # height
+            r.get(5, ""),   # style string
         ])
 
     return style_rows

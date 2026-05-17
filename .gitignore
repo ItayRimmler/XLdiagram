@@ -3,11 +3,19 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Input/output files — keep the folders, ignore the contents
+# Input/output files
 inputs/*
 outputs/*
 !inputs/.gitkeep
+!inputs/*.xlsx
 !outputs/.gitkeep
+
+# Build artifacts
+build/
+dist/
+*.spec
+*.zip
+Session_*.txt
 
 # IDE
 .idea/

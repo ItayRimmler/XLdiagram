@@ -32,8 +32,6 @@ import argparse
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-# Anchor all imports to this script's directory so the program works
-# regardless of where the user runs it from (any working directory).
 sys.path.insert(0, str(Path(__file__).parent))
 
 from reader  import read_xlsx
@@ -41,12 +39,11 @@ from parser  import parse_layout, parse_edges, parse_styles
 from builder import build_xml, NODE_W, NODE_H, VERTEX_STYLE
 
 SCRIPT_DIR  = Path(__file__).parent
-INPUTS_DIR  = SCRIPT_DIR / "inputs"   # drop .xlsx files here
-OUTPUTS_DIR = SCRIPT_DIR / "outputs"  # .drawio files appear here
+INPUTS_DIR  = SCRIPT_DIR / "inputs"
+OUTPUTS_DIR = SCRIPT_DIR / "outputs"
 
-# Default values — overridable via CLI flags
-DEFAULT_SCALE  = 120   # pixels per Excel grid cell
-DEFAULT_MARGIN = 100   # pixel offset from canvas edge so nodes aren't clipped
+DEFAULT_SCALE  = 120
+DEFAULT_MARGIN = 100
 
 
 def main():
@@ -60,20 +57,18 @@ def main():
     parser.add_argument("--margin", type=int, default=DEFAULT_MARGIN,
         help=f"Pixel offset from canvas edge (default: {DEFAULT_MARGIN})")
     parser.add_argument("--zero-phantom", action="store_true",
-        help="Render phantom nodes as 0×0 points instead of full-size invisible boxes")
+        help="Render phantom nodes as 0x0 points instead of full-size invisible boxes")
     args = parser.parse_args()
 
     input_path  = INPUTS_DIR  / args.input
     output_path = OUTPUTS_DIR / Path(args.input).with_suffix(".drawio").name
 
     if not input_path.exists():
-        print(f"Error: {input_path} not found")
+        print(f"Error: {input_path.name} not found in inputs/")
         sys.exit(1)
 
-    # --- Step 1: read raw cell data from the xlsx file ---
     sheets = read_xlsx(input_path)
 
-    # --- Step 2: convert raw data into graph structures ---
     positions, groups = parse_layout(
         sheets.get("Layout", {}),
         scale=args.scale,
@@ -87,16 +82,14 @@ def main():
         default_style=VERTEX_STYLE,
     )
 
-    # --- Step 3: assemble draw.io XML ---
     xml_model = build_xml(positions, edges, groups=groups, styles=styles,
                           zero_phantom=args.zero_phantom)
 
-    # --- Step 4: write output file ---
     tree = ET.ElementTree(xml_model)
     ET.indent(tree, space="  ")
     tree.write(output_path, encoding="unicode", xml_declaration=False)
 
-    print(f"Written: {output_path}")
+    print(f"Written: {output_path.name}")
     print(f"  {len(positions)} positioned nodes, {len(edges)} edges, {len(styles)} style groups")
 
 

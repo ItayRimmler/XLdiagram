@@ -8,6 +8,16 @@ parse_styles — Style rows  → {group_name: {w, h, style}}
 No XML, no file I/O here. Pure data transformation.
 """
 
+import re
+
+def _strip_parens(name: str) -> str:
+    """Remove a trailing parenthetical from a node name.
+    'Node1 (Deez Nuts)' -> 'Node1'
+    Parentheticals anywhere else are left alone.
+    """
+    return re.sub(r'\s*\([^)]*\)\s*$', '', name).strip()
+
+
 # Each separator is a pictogram of what it renders in the diagram.
 # The value is the draw.io arrow style string for that connection type.
 #
@@ -56,11 +66,11 @@ def parse_layout(layout_cells, scale, margin=100):
         # Split "NodeName|GroupName" — the | separates name from optional group
         if "|" in cell_value:
             name, group = cell_value.split("|", 1)
-            name  = name.strip()
+            name  = _strip_parens(name)
             group = group.strip()
             groups[name] = group
         else:
-            name = cell_value.strip()
+            name = _strip_parens(cell_value)
 
         x = (col - 1) * scale + margin
         y = (row - 1) * scale + margin
@@ -73,25 +83,19 @@ def parse_styles(style_rows, default_w, default_h, default_style):
     """
     Convert Style sheet rows into a dict keyed by group name.
 
-    style_rows: [[group, width, height, style_string], ...]  from reader
-    default_w/h/style: fallback values used when a field is missing or unparseable
+    style_rows: [[active, group, width, height, style_string], ...]  from reader
+      active: "#" = inactive (skip), blank = active
 
     Returns {group_name: {"w": int, "h": int, "style": str}}
-
-    Fallback chain used by builder when looking up a node's style:
-      1. node's declared group
-      2. group named "default" if it exists
-      3. the only group if exactly 1 is defined
-      4. hardcoded defaults from builder constants
     """
     styles = {}
-    for group, width, height, style_str in style_rows:
-        if not group:
-            continue  # skip blank rows
+    for active, group, width, height, style_str in style_rows:
+        if str(active).strip() == "#" or not group:
+            continue  # skip commented-out or blank rows
         try:
             w = int(width)
         except (ValueError, TypeError):
-            w = default_w  # unparseable width → use default
+            w = default_w
 
         try:
             h = int(height)
@@ -130,8 +134,8 @@ def parse_edges(edge_rows):
         style = ARROW_STYLES.get(sep, _DEFAULT_STYLE)
 
         edges.append({
-            "source": source,
-            "target": target,
+            "source": _strip_parens(source),
+            "target": _strip_parens(target),
             "label":  label,
             "style":  style,
         })
